@@ -135,6 +135,8 @@ fn get_password(max_length: usize) -> Vec<u8> {
     stdin().read_line(&mut buffer).unwrap();
 
     let bytes_buffer = buffer.into_bytes();
+
+    // Take first max_length bytes from password. Ignore the rest.
     bytes_buffer[..max_length.min(bytes_buffer.len())].to_vec()
 }
 
