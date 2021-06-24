@@ -52,23 +52,7 @@ fn main() {
     if config.input_file().is_some() {
         // Ask user for password
         let password = get_password(MAX_PASSWORD_LENGTH);
-        let input_file_name = config.input_file().unwrap();
-        let input_file = File::open(input_file_name).unwrap();
-        let mut input_buff_reader = BufReader::new(&input_file);
-        let mut buffer = [0; db::DEFAULT_KEY_SIZE];
-
-        while let Ok(bytes_read) = input_buff_reader.read(&mut buffer) {
-            if bytes_read == 0 {
-                break;
-            }
-
-            if let Some(entropy_key) = db.get_key() {
-                data.push(encrypt(&buffer, &entropy_key, &password));
-            } else {
-                eprintln!("Not enough keys in database to encrypt/decrypt file.");
-                break;
-            }
-        }
+        data = read_input_file_data(&config, &mut db, &password);
 
         if config.statistics() {
             let db_keys = if db.keys().is_some() {
@@ -88,13 +72,7 @@ fn main() {
     }
 
     if config.output_file().is_some() {
-        let output_file_name = config.output_file().unwrap();
-        let output_file = File::create(output_file_name).unwrap();
-        let mut output_buff_writer = BufWriter::new(&output_file);
-
-        for d in data {
-            output_buff_writer.write(&d).unwrap();
-        }
+        write_output_file(&config, &data);
     } else {
         for d in data {
             println!("{:?}", d)
@@ -138,6 +116,43 @@ fn get_password(max_length: usize) -> Vec<u8> {
 
     // Take first max_length bytes from password. Ignore the rest.
     bytes_buffer[..max_length.min(bytes_buffer.len())].to_vec()
+}
+
+fn read_input_file_data(
+    config: &Config,
+    db: &mut impl DbInterface,
+    password: &[u8],
+) -> Vec<Vec<u8>> {
+    let input_file_name = config.input_file().unwrap();
+    let input_file = File::open(input_file_name).unwrap();
+    let mut input_buff_reader = BufReader::new(&input_file);
+    let mut buffer = [0; db::DEFAULT_KEY_SIZE];
+
+    let mut result = vec![];
+    while let Ok(bytes_read) = input_buff_reader.read(&mut buffer) {
+        if bytes_read == 0 {
+            break;
+        }
+
+        if let Some(entropy_key) = db.get_key() {
+            result.push(encrypt(&buffer, &entropy_key, &password));
+        } else {
+            eprintln!("Not enough keys in database to encrypt/decrypt file.");
+            break;
+        }
+    }
+
+    result
+}
+
+fn write_output_file(config: &Config, data: &Vec<Vec<u8>>) {
+    let output_file_name = config.output_file().unwrap();
+    let output_file = File::create(output_file_name).unwrap();
+    let mut output_buff_writer = BufWriter::new(&output_file);
+
+    for d in data {
+        output_buff_writer.write(d).unwrap();
+    }
 }
 
 fn encrypt(data: &[u8], entropy: &[u8], password: &[u8]) -> Vec<u8> {
