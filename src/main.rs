@@ -52,7 +52,7 @@ fn main() {
     if config.input_file().is_some() {
         // Ask user for password
         let password = get_password(MAX_PASSWORD_LENGTH);
-        data = read_input_file_data(&config, &mut db, &password);
+        data = read_input_file(&config, &mut db, &password);
 
         if config.statistics() {
             let db_keys = if db.keys().is_some() {
@@ -118,11 +118,7 @@ fn get_password(max_length: usize) -> Vec<u8> {
     bytes_buffer[..max_length.min(bytes_buffer.len())].to_vec()
 }
 
-fn read_input_file_data(
-    config: &Config,
-    db: &mut impl DbInterface,
-    password: &[u8],
-) -> Vec<Vec<u8>> {
+fn read_input_file(config: &Config, db: &mut impl DbInterface, password: &[u8]) -> Vec<Vec<u8>> {
     let input_file_name = config.input_file().unwrap();
     let input_file = File::open(input_file_name).unwrap();
     let mut input_buff_reader = BufReader::new(&input_file);
