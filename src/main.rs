@@ -47,8 +47,8 @@ fn main() {
         return;
     }
 
-    // Make sure we have input file name to even consider encryption/decryption
     let mut data = vec![];
+    // Make sure we have input file name to even consider encryption/decryption
     if config.input_file().is_some() {
         // Ask user for password
         let password = get_password(MAX_PASSWORD_LENGTH);
