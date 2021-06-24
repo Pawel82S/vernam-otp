@@ -47,7 +47,7 @@ fn main() {
         return;
     }
 
-    // Make sure we have input and output file name to even consider encryption/decryption
+    // Make sure we have input file name to even consider encryption/decryption
     let mut data = vec![];
     if config.input_file().is_some() {
         // Ask user for password
