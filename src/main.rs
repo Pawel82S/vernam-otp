@@ -119,13 +119,13 @@ fn get_password(max_length: usize) -> Vec<u8> {
 }
 
 fn read_input_file(config: &Config, db: &mut impl DbInterface, password: &[u8]) -> Vec<Vec<u8>> {
-    let input_file_name = config.input_file().unwrap();
-    let input_file = File::open(input_file_name).unwrap();
-    let mut input_buff_reader = BufReader::new(&input_file);
+    let file_name = config.input_file().unwrap();
+    let file = File::open(file_name).unwrap();
+    let mut buff_reader = BufReader::with_capacity(db::BUFFER_SIZE, &file);
     let mut buffer = [0; db::DEFAULT_KEY_SIZE];
 
     let mut result = vec![];
-    while let Ok(bytes_read) = input_buff_reader.read(&mut buffer) {
+    while let Ok(bytes_read) = buff_reader.read(&mut buffer) {
         if bytes_read == 0 {
             break;
         }
@@ -142,12 +142,12 @@ fn read_input_file(config: &Config, db: &mut impl DbInterface, password: &[u8]) 
 }
 
 fn write_output_file(config: &Config, data: &Vec<Vec<u8>>) {
-    let output_file_name = config.output_file().unwrap();
-    let output_file = File::create(output_file_name).unwrap();
-    let mut output_buff_writer = BufWriter::new(&output_file);
+    let file_name = config.output_file().unwrap();
+    let file = File::create(file_name).unwrap();
+    let mut buff_writer = BufWriter::with_capacity(db::BUFFER_SIZE, &file);
 
     for d in data {
-        output_buff_writer.write(d).unwrap();
+        buff_writer.write(d).unwrap();
     }
 }
 
