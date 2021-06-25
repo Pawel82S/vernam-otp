@@ -153,7 +153,7 @@ fn write_output_file(config: &Config, data: &Vec<Vec<u8>>) {
 
 fn encrypt(data: &[u8], entropy: &[u8], password: &[u8]) -> Vec<u8> {
     if entropy.len() < data.len() {
-        panic!("Not enough entropy data.")
+        panic!("Not enough entropy data {}/{}.", entropy.len(), data.len());
     }
 
     let mut result = vec![];
